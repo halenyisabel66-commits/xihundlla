@@ -24,7 +24,8 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
-      - name: Android SDK + aceitar licenças
+      # Instala o Android SDK (cmdline-tools + sdkmanager)
+      - name: Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Dependências do sistema
@@ -36,8 +37,7 @@ jobs:
             autoconf automake libtool pkg-config \
             zlib1g-dev libncurses5-dev libtinfo5 \
             libffi-dev libssl-dev \
-            cmake \
-            openjdk-17-jdk
+            cmake
 
       - name: Instalar Buildozer
         run: |
@@ -61,12 +61,29 @@ jobs:
             ~/.gradle
           key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
 
+      # ✅ AQUI está a correção principal: instalar platform + build-tools (tem o AIDL)
+      - name: Instalar pacotes do Android SDK (platform/build-tools) + licenças
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
+        run: |
+          sdkmanager --version
+          yes | sdkmanager --licenses
+
+          # Instala o que o buildozer precisa (inclui AIDL nos build-tools)
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
+
+          # (Opcional, mas ajuda em alguns projetos)
+          sdkmanager "cmdline-tools;latest" || true
+
       - name: Compilar APK (debug)
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
           ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         run: |
-          yes | sdkmanager --licenses || true
           buildozer -v android debug
 
       - name: Upload do APK
