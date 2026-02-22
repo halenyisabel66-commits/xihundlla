@@ -1,0 +1,27 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Baixar código
+      uses: actions/checkout@v4
+
+    - name: Build com Buildozer
+      uses: digreatbrian/buildozer-action@v2
+      with:
+        workdir: .
+        buildozer_version: stable
+        command: buildozer android debug
+
+    - name: Guardar APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: apk
+        path: bin/*.apk
