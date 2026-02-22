@@ -10,18 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Baixar código
-      uses: actions/checkout@v4
+      - name: Baixar código
+        uses: actions/checkout@v4
 
-    - name: Build com Buildozer
-      uses: digreatbrian/buildozer-action@v2
-      with:
-        workdir: .
-        buildozer_version: stable
-        command: buildozer android debug
+      - name: Instalar Buildozer
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip python3-setuptools python3-wheel
+          pip3 install --upgrade buildozer
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
 
-    - name: Guardar APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: apk
-        path: bin/*.apk
+      - name: Build APK
+        run: buildozer android debug
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: bin/*.apk
