@@ -1,51 +1,39 @@
-name: Build Android APK
+name: Build APK Android
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+    - name: Baixar código
+      uses: actions/checkout@v3
 
-    - name: Install system packages
+    - name: Instalar dependências
       run: |
-        sudo dpkg --add-architecture i386
         sudo apt update
-        sudo apt install -y \
-          python3-pip \
-          build-essential \
-          git \
-          zip \
-          unzip \
-          openjdk-17-jdk \
-          autoconf \
-          libtool \
-          pkg-config \
-          zlib1g-dev \
-          libncurses5-dev \
-          libncursesw5-dev \
-          libtinfo5 \
-          cmake \
-          libffi-dev \
-          libssl-dev
-
-    - name: Install Buildozer
-      run: |
+        sudo apt install -y python3-pip build-essential git zip unzip openjdk-17-jdk
         pip install --upgrade pip
         pip install buildozer cython
 
-    - name: Build APK
+    - name: Verificar arquivos
+      run: |
+        ls -la
+        if [ ! -f buildozer.spec ]; then
+          echo "ERRO: buildozer.spec não encontrado na raiz!"
+          exit 1
+        fi
+
+    - name: Compilar APK
       run: |
         buildozer android debug
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
+    - name: Enviar APK
+      uses: actions/upload-artifact@v3
       with:
-        name: apk
+        name: Xihundla-APK
         path: bin/*.apk
